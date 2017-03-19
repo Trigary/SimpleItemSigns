@@ -61,7 +61,7 @@ public class CommandListener implements CommandExecutor {
 		Block block = player.getTargetBlock ((Set<Material>) null, 16);
 		if (block == null || isSign (block.getType ()) == false) {
 			sendMessage (player, "You aren't looking at a sign or you are too far away!");
-		} else if (player.getInventory ().getItemInMainHand ().getType () == Material.AIR) {
+		} else if (player.getInventory ().getItemInMainHand ().getType () == Material.AIR) { //Below 1.8 (inclusive) use: getItemInHand ()
 			sendMessage (player, "You don't have anything in your hand!");
 		} else {
 			Location location = block.getLocation ();
@@ -78,7 +78,7 @@ public class CommandListener implements CommandExecutor {
 			}
 			title = title.substring (0, title.length () - 1);
 			
-			main.storedSigns.add (new ItemSign (block.getLocation (), player.getInventory ().getItemInMainHand (), ChatColor.translateAlternateColorCodes ('&', title)));
+			main.storedSigns.add (new ItemSign (block.getLocation (), player.getInventory ().getItemInMainHand (), ChatColor.translateAlternateColorCodes ('&', title)));  //Below 1.8 (inclusive) use: getItemInHand ()
 			main.saveStoredSigns ();
 			sendMessage (player, "The ItemSign was successfully created!");
 		}
