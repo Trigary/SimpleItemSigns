@@ -1,0 +1,11 @@
+name: ${artifactId}
+version: ${version}
+author: ${author}
+description: ${description}
+website: ${url}
+main: ${mainClass}
+
+commands:
+  simpleitemsigns:
+    description: "§7Create, delete, reload ItemSigns."
+    usage: "§6[SimpleItemSigns] §fUsage: /simpleitemsigns <create|delete|reload> <if create: inventory title>"

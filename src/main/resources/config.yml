@@ -1,0 +1,10 @@
+# === SimpleItemSign Configuration === #
+# You don't need to modify anything, the plugin will work perfectly
+
+# The size of the "sign-inventory"
+# Options are: 9, 18, 27, 36, 45, 54
+inventorySize: 9
+
+# If this is true, only players with the "simpleitemsigns.use" permission will be able to open the ItemSigns
+# This is ignored if "usePermissions" is false
+needUsePermission: false
