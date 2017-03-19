@@ -13,8 +13,8 @@
         <author>Trigary</author>
     </properties>
 
-    <description>Allows admins to create signs with predefined inventories.</description>
-    <url>spigot post</url>
+    <description>Allows admins to create signs full of an item for all players to take.</description>
+    <url>https://www.spigotmc.org/resources/simpleitemsigns.38168/</url>
 
     <licenses>
         <license>
