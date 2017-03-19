@@ -12,7 +12,6 @@ import java.util.Set;
 public class Main extends JavaPlugin {
 	Set<ItemSign> storedSigns;
 	int inventorySize;
-	boolean usePermissions;
 	boolean needUsePermission;
 	
 	@Override
@@ -29,14 +28,13 @@ public class Main extends JavaPlugin {
 	}
 	
 	static boolean isSign (Material material) {
-		return (material == Material.SIGN || material == Material.SIGN_POST || material == Material.WALL_SIGN);
+		return (material == Material.SIGN_POST || material == Material.WALL_SIGN);
 	}
 	
 	
 	private void loadConfig () {
 		saveDefaultConfig ();
 		inventorySize = getConfig ().getInt ("inventorySize");
-		usePermissions = getConfig ().getBoolean ("usePermissions");
 		needUsePermission = getConfig ().getBoolean ("needUsePermission");
 	}
 	

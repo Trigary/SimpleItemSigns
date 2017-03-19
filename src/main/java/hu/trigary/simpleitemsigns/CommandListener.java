@@ -1,5 +1,6 @@
 package hu.trigary.simpleitemsigns;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -77,7 +78,7 @@ public class CommandListener implements CommandExecutor {
 			}
 			title = title.substring (0, title.length () - 1);
 			
-			main.storedSigns.add (new ItemSign (block.getLocation (), player.getInventory ().getItemInMainHand (), title));
+			main.storedSigns.add (new ItemSign (block.getLocation (), player.getInventory ().getItemInMainHand (), ChatColor.translateAlternateColorCodes ('&', title)));
 			main.saveStoredSigns ();
 			sendMessage (player, "The ItemSign was successfully created!");
 		}
