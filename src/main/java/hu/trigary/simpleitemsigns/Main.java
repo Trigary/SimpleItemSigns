@@ -12,6 +12,7 @@ import java.util.Set;
 public class Main extends JavaPlugin {
 	Set<ItemSign> storedSigns;
 	int inventorySize;
+	boolean needUsePermission;
 	
 	@Override
 	public void onEnable () {
@@ -33,6 +34,7 @@ public class Main extends JavaPlugin {
 	
 	private void loadConfig () {
 		saveDefaultConfig ();
+		needUsePermission = getConfig ().getBoolean ("needUsePermission");
 		inventorySize = getConfig ().getInt ("inventorySize");
 	}
 	
