@@ -6,9 +6,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.Map;
 
-public class ItemSignStorable implements Serializable {
+class ItemSignStorable implements Serializable {
 	ItemSignStorable (Location location, ItemStack item, String title) {
 		this.location = location.serialize ();
 		if (item.hasItemMeta ()) {
@@ -29,8 +29,6 @@ public class ItemSignStorable implements Serializable {
 		ItemStack itemStack = ItemStack.deserialize (item);
 		if (meta != null) {
 			itemStack.setItemMeta ((ItemMeta)ConfigurationSerialization.deserializeObject (meta, ConfigurationSerialization.getClassByAlias ("ItemMeta")));
-			//ItemMeta itemMeta = (ItemMeta)ConfigurationSerialization.deserializeObject (meta);
-			//itemStack.setItemMeta ((ItemMeta)ConfigurationSerialization.deserializeObject (meta));
 		}
 		return new ItemSign (Location.deserialize (location), itemStack, title);
 	}

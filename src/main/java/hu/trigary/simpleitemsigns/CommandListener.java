@@ -8,6 +8,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.Set;
 
@@ -28,9 +29,7 @@ public class CommandListener implements CommandExecutor {
 			return true;
 		}
 		
-		
-		
-		if (args.length != 1 && args[0].equals ("create") == false) {
+		if ((args.length != 1 && args[0].equals ("create") == false) || (args.length == 1 && args[0].equals ("create"))) {
 			return false;
 		}
 		
@@ -61,7 +60,7 @@ public class CommandListener implements CommandExecutor {
 		Block block = player.getTargetBlock ((Set<Material>) null, 16);
 		if (block == null || isSign (block.getType ()) == false) {
 			sendMessage (player, "You aren't looking at a sign or you are too far away!");
-		} else if (player.getInventory ().getItemInMainHand ().getType () == Material.AIR) { //Below 1.8 (inclusive) use: getItemInHand ()
+		} else if (getItemInHand (player).getType () == Material.AIR) {
 			sendMessage (player, "You don't have anything in your hand!");
 		} else {
 			Location location = block.getLocation ();
@@ -78,7 +77,7 @@ public class CommandListener implements CommandExecutor {
 			}
 			title = title.substring (0, title.length () - 1);
 			
-			main.storedSigns.add (new ItemSign (block.getLocation (), player.getInventory ().getItemInMainHand (), ChatColor.translateAlternateColorCodes ('&', title)));  //Below 1.8 (inclusive) use: getItemInHand ()
+			main.storedSigns.add (new ItemSign (block.getLocation (), getItemInHand (player), ChatColor.translateAlternateColorCodes ('&', title)));
 			main.saveStoredSigns ();
 			sendMessage (player, "The ItemSign was successfully created!");
 		}
@@ -107,5 +106,11 @@ public class CommandListener implements CommandExecutor {
 		main.storedSigns.removeIf (element -> element.isSign () == false);
 		main.saveStoredSigns ();
 		sendMessage (sender, Integer.toString (count - main.storedSigns.size ()) + " obsolete signs were found and removed.");
+	}
+	
+	
+	private ItemStack getItemInHand (Player player) {
+		return player.getInventory ().getItemInMainHand ();
+		//return player.getItemInHand (); //For 1.8 and below
 	}
 }
