@@ -36,7 +36,7 @@ public class Main extends JavaPlugin {
 	
 	
 	
-	void saveData () {
+	void saveData () { //TODO rename to save
 		Map<String, Object> data = new HashMap<> ();
 		
 		Set<Map<String, Object>> serializedItemSigns = new HashSet<> ();
