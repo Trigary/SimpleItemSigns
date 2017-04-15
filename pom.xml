@@ -6,14 +6,16 @@
 
     <groupId>hu.trigary</groupId>
     <artifactId>SimpleItemSigns</artifactId>
-    <version>1.2</version>
+    <version>2.0</version>
 
     <properties>
         <mainClass>${groupId}.simpleitemsigns.Main</mainClass>
         <author>Trigary</author>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 
-    <description>Allows admins to create signs full of an item for all players to take.</description>
+    <description>Create openable signs full of the specified item while having any text on the sign.</description>
     <url>https://www.spigotmc.org/resources/simpleitemsigns.38168/</url>
 
     <repositories>
@@ -26,7 +28,7 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.11.2-R0.1-SNAPSHOT</version>
+            <version>1.11.2-R0.1-SNAPSHOT</version> <!-->1.8.8-R0.1-SNAPSHOT<!-->
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -50,15 +52,5 @@
                 </excludes>
             </resource>
         </resources>
-        <plugins>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.6.1</version>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
-            </plugin>
-        </plugins>
     </build>
 </project>

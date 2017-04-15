@@ -4,6 +4,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.Sign;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -11,9 +12,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Set;
-
-import static hu.trigary.simpleitemsigns.Main.isSign;
-import static hu.trigary.simpleitemsigns.Main.sendMessage;
 
 public class CommandListener implements CommandExecutor {
 	CommandListener (Main main) {
@@ -24,93 +22,168 @@ public class CommandListener implements CommandExecutor {
 	
 	@Override
 	public boolean onCommand (CommandSender sender, Command cmd, String label, String[] args) {
-		if (sender.isOp () == false && sender.hasPermission ("simpleitemsigns.admin") == false) {
-			sendMessage (sender, "You have insufficient permissions!");
-			return true;
-		}
-		
-		if ((args.length != 1 && args[0].equals ("create") == false) || (args.length == 1 && args[0].equals ("create"))) {
-			return false;
-		}
-		
-		switch (args[0]) {
-			case "create":
-				if (sender instanceof Player) {
-					commandCreate ((Player)sender, args);
-				} else {
-					sendMessage (sender, "Only players can use this command!");
+		if (sender.hasPermission ("simpleitemsigns.admin")) {
+			if (args.length != 0) {
+				switch (args[0]) {
+					case "create":
+						if (args.length > 1) {
+							if (playerCheck (sender)) {
+								commandCreate ((Player)sender, args);
+							}
+							return true;
+						} else {
+							return false;
+						}
+					case "delete":
+						if (args.length == 1) {
+							if (playerCheck (sender)) {
+								commandDelete ((Player)sender);
+							}
+							return true;
+						} else {
+							return false;
+						}
+					case "check":
+						if (args.length == 1) {
+							commandCheck (sender);
+							return true;
+						} else {
+							return false;
+						}
+					case "color":
+						if (args.length == 1) {
+							if (playerCheck (sender)) {
+								commandColor ((Player)sender);
+							}
+							return true;
+						} else {
+							return false;
+						}
+					case "edit":
+						if (args.length > 2) {
+							if (playerCheck (sender)) {
+								commandEdit ((Player)sender, args);
+							}
+							return true;
+						} else {
+							return false;
+						}
+					default:
+						return false;
 				}
-				return true;
-			case "delete":
-				if (sender instanceof Player) {
-					commandDelete ((Player)sender);
-				} else {
-					sendMessage (sender, "Only players can use this command!");
-				}
-				return true;
-			case "reload":
-				commandReload (sender);
-				return true;
-			default:
+			} else {
 				return false;
+			}
+		} else {
+			Main.sendError (sender, "You have insufficient permissions!");
+			return true;
 		}
 	}
 	
+	
+	
 	private void commandCreate (Player player, String[] args) {
 		Block block = player.getTargetBlock ((Set<Material>) null, 16);
-		if (block == null || isSign (block.getType ()) == false) {
-			sendMessage (player, "You aren't looking at a sign or you are too far away!");
-		} else if (getItemInHand (player).getType () == Material.AIR) {
-			sendMessage (player, "You don't have anything in your hand!");
-		} else {
-			Location location = block.getLocation ();
-			for (ItemSign sign : main.storedSigns) {
-				if (sign.matches (location)) {
-					main.storedSigns.remove (sign);
-					break;
+		if (block != null && Main.isSign (block.getType ())) {
+			if (getItemInHand (player).getType () != Material.AIR) {
+				Location location = block.getLocation ();
+				main.itemSigns.removeIf (itemSign -> itemSign.location.equals (location));
+				
+				String title = "";
+				for (int i = 1; i < args.length; i++) {
+					title += args[i] + " ";
 				}
+				title = title.substring (0, title.length () - 1);
+				
+				main.itemSigns.add (new ItemSign (block.getLocation (), getItemInHand (player), ChatColor.translateAlternateColorCodes ('&', title)));
+				main.saveData ();
+				Main.sendMessage (player, "The ItemSign has been successfully created.");
+			} else {
+				Main.sendError (player, "You don't have anything in your hand!");
 			}
-			
-			String title = "";
-			for (int i = 1; i < args.length; i++) {
-				title += args[i] + " ";
-			}
-			title = title.substring (0, title.length () - 1);
-			
-			main.storedSigns.add (new ItemSign (block.getLocation (), getItemInHand (player), ChatColor.translateAlternateColorCodes ('&', title)));
-			main.saveStoredSigns ();
-			sendMessage (player, "The ItemSign was successfully created!");
+		} else {
+			Main.sendError (player, "You aren't looking at a sign or you are too far away!");
 		}
 	}
 	
 	private void commandDelete (Player player) {
 		Block block = player.getTargetBlock ((Set<Material>) null, 16);
-		if (block == null || isSign (block.getType ()) == false) {
-			sendMessage (player, "You aren't looking at a sign or you are too far away!");
-		} else {
+		if (block != null && Main.isSign (block.getType ())) {
 			Location location = block.getLocation ();
-			for (ItemSign sign : main.storedSigns) {
-				if (sign.matches (location)) {
-					main.storedSigns.remove (sign);
-					main.saveStoredSigns ();
-					sendMessage (player, "The sign was successfully removed!");
+			for (ItemSign sign : main.itemSigns) {
+				if (sign.location.equals (location)) {
+					main.itemSigns.remove (sign);
+					main.saveData ();
+					Main.sendMessage (player, "The sign has been successfully removed.");
 					return;
 				}
 			}
-			sendMessage (player, "That sign is not an ItemSign!");
+			Main.sendError (player, "That sign is not an ItemSign!");
+		} else {
+			Main.sendError (player, "You aren't looking at a sign or you are too far away!");
 		}
 	}
 	
-	private void commandReload (CommandSender sender) {
-		int count = main.storedSigns.size ();
-		main.storedSigns.removeIf (element -> element.isSign () == false);
-		main.saveStoredSigns ();
-		sendMessage (sender, Integer.toString (count - main.storedSigns.size ()) + " obsolete signs were found and removed.");
+	private void commandCheck (CommandSender sender) {
+		int count = main.itemSigns.size ();
+		main.itemSigns.removeIf (itemSign -> !Main.isSign (itemSign.location.getBlock ().getType ()));
+		main.saveData ();
+		Main.sendMessage (sender, Integer.toString (count - main.itemSigns.size ()) + " no longer valid ItemSigns have been removed.");
+	}
+	
+	private void commandColor (Player player) {
+		Block block = player.getTargetBlock ((Set<Material>) null, 16);
+		if (block != null && Main.isSign (block.getType ())) {
+			Sign sign = (Sign)block.getState ();
+			for (int i = 0; i < sign.getLines ().length; i++) {
+				sign.setLine (i, ChatColor.translateAlternateColorCodes ('&', sign.getLine (i)));
+			}
+			sign.update ();
+			Main.sendMessage (player, "You have successfully colored the sign's text.");
+		} else {
+			Main.sendError (player, "You aren't looking at a sign or you are too far away!");
+		}
+	}
+	
+	private void commandEdit (Player player, String[] args) {
+		if (args[1].matches ("[1-4]")) {
+			int number = Integer.valueOf (args[1]);
+			Block block = player.getTargetBlock ((Set<Material>)null, 16);
+			if (block != null && Main.isSign (block.getType ())) {
+				Sign sign = (Sign)block.getState ();
+				
+				String text = "";
+				for (int i = 2; i < args.length; i++) {
+					text += args[i] + " ";
+				}
+				text = text.substring (0, text.length () - 1);
+				
+				sign.setLine (number - 1, ChatColor.translateAlternateColorCodes ('&', text));
+				sign.update ();
+				Main.sendMessage (player, "You have successfully set the sign's " + number + ". line.");
+			} else {
+				Main.sendError (player, "You aren't looking at a sign or you are too far away!");
+			}
+		} else {
+			Main.sendError (player, "You have specified an incorrect line number! It must be either 1, 2, 3 or 4.");
+		}
 	}
 	
 	
+	
 	private ItemStack getItemInHand (Player player) {
-		return player.getInventory ().getItemInMainHand ();
-		//return player.getItemInHand (); //For 1.8 and below
+		//return player.getInventory ().getItemInMainHand ();
+		
+		//noinspection deprecation
+		return player.getItemInHand (); //For 1.8 and below
+	}
+	
+	private boolean playerCheck (CommandSender sender) {
+		if (sender instanceof Player) {
+			return true;
+		} else {
+			Main.sendError (sender, "Only players can use this command!");
+			return false;
+		}
 	}
 }

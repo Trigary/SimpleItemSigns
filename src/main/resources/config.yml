@@ -1,12 +1,17 @@
-# === SimpleItemSign Configuration === #
-# You don't need to modify anything, the plugin will work perfectly
+###########################################################
+# - SimpleItemSigns Configuration - Plugin by: Trigary - #
+###########################################################
+# All commands are explained when you enter one incorrectly and they all require the "simpleitemsigns.admin" permission
+# Command aliases: /simpleitemsigns | /sis
 
-# The size of the "sign-inventory"
-# Options are: 9, 18, 27, 36, 45, 54
-inventorySize: 9
 
-# If this is true, only players with the "simpleitemsigns.use" permission will be able to open the ItemSigns
+
+# If this is true, only players with the "simpleitemsigns.use" permission will be able to open ItemSigns
 needUsePermission: false
 
-# If this is true, items which aren't from the ItemSign will be dropped on the ground when the player closes the inventory
+# How many rows should be in a sign-inventory?
+# Options: 1, 2, 3, 4, 5, 6
+rows: 3
+
+# If this is true, items which aren't from the ItemSign will be dropped on the ground when the player closes the ItemSign
 dontTrash: true

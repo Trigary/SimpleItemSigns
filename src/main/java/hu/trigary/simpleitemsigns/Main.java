@@ -3,88 +3,95 @@ package hu.trigary.simpleitemsigns;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
-public class Main extends JavaPlugin {
-	Set<ItemSign> storedSigns;
-	int inventorySize;
-	boolean needUsePermission;
-	boolean dontTrash;
-	
+public class Main extends JavaPlugin {	
 	@Override
 	public void onEnable () {
-		loadConfig ();
-		loadStoredSigns ();
+		saveDefaultConfig ();
+		needUsePermission = getConfig ().getBoolean ("needUsePermission");
+		size = getConfig ().getInt ("rows") * 9;
+		dontTrash = getConfig ().getBoolean ("dontTrash");
+		
+		Map<String, Object> data = customLoad ("data.data");
+		itemSigns = new HashSet<> ();
+		if (data != null) {
+			loadItemSigns (data.get ("itemSigns"));
+		}
+		
 		getCommand ("simpleitemsigns").setExecutor (new CommandListener (this));
 		getServer ().getPluginManager ().registerEvents (new EventListener (this), this);
 	}
 	
-	private void loadConfig () {
-		saveDefaultConfig ();
-		FileConfiguration config = getConfig ();
-		FileConfiguration defaultConfig = YamlConfiguration.loadConfiguration (getTextResource ("config.yml"));
+	Set<ItemSign> itemSigns;
+	boolean needUsePermission;
+	int size;
+	boolean dontTrash;
+	
+	
+	
+	void saveData () {
+		Map<String, Object> data = new HashMap<> ();
 		
-		inventorySize = (int) getConfigEntry (config, defaultConfig, "inventorySize");
-		needUsePermission = (boolean) getConfigEntry (config, defaultConfig, "needUsePermission");
-		dontTrash = (boolean) getConfigEntry (config, defaultConfig, "dontTrash");
+		Set<Map<String, Object>> serializedItemSigns = new HashSet<> ();
+		for (ItemSign itemSign : itemSigns) {
+			serializedItemSigns.add (itemSign.serialize ());
+		}
+		data.put ("itemSigns", serializedItemSigns);
+		
+		customSave (data, "data.data");
 	}
 	
-	private void loadStoredSigns () {
-		storedSigns = new HashSet<> ();
-		
-		if (new File (getFileName ()).exists ()) {
-			try {
-				ObjectInputStream in = new ObjectInputStream (new FileInputStream (getFileName ()));
-				@SuppressWarnings("unchecked")
-				Set<ItemSignStorable> signs = (Set<ItemSignStorable>)in.readObject ();
-				for (ItemSignStorable sign : signs) {
-					storedSigns.add (sign.getItemSign ());
-				}
-				in.close ();
-			} catch (IOException | ClassNotFoundException exception) {
-				getLogger ().severe ("An error occurred while reading the stored ItemSigns. If you believe this is a bug in the plugin, please contact the developer!");
-				exception.printStackTrace ();
-			}
+	
+	
+	private void loadItemSigns (Object mapValue) {
+		@SuppressWarnings ("unchecked")
+		Set<Map<String, Object>> serializedItemSigns = (Set<Map<String, Object>>)mapValue;
+		for (Map<String, Object> serialized : serializedItemSigns) {
+			itemSigns.add (ItemSign.deserialize (serialized));
 		}
 	}
 	
-	void saveStoredSigns () {
-		try {
-			ObjectOutputStream out = new ObjectOutputStream (new FileOutputStream (getFileName ()));
-			Set<ItemSignStorable> signs = new HashSet<> ();
-			for (ItemSign sign : storedSigns) {
-				signs.add (sign.getStorable ());
+	private Map<String, Object> customLoad (String path) {
+		if (new File (getDataFolder () + File.separator + path).exists ()) {
+			try {
+				ObjectInputStream in = new ObjectInputStream (new FileInputStream (getDataFolder () + File.separator + path));
+				@SuppressWarnings ("unchecked")
+				Map<String, Object> data = (Map<String, Object>)in.readObject ();
+				in.close ();
+				return data;
+			} catch (IOException | ClassNotFoundException exception) {
+				exception.printStackTrace ();
 			}
-			out.writeObject (signs);
+		}
+		return null;
+	}
+	
+	private void customSave (Map<String, Object> object, String path) {
+		try {
+			ObjectOutputStream out = new ObjectOutputStream (new FileOutputStream (getDataFolder () + File.separator + path));
+			out.writeObject (object);
 			out.flush ();
 			out.close ();
 		} catch (IOException exception) {
-			getLogger ().severe ("An error occurred while saving the ItemSigns. If you believe this is a bug in the plugin, please contact the developer!");
 			exception.printStackTrace ();
 		}
 	}
 	
-	private String getFileName () {
-		return getDataFolder () + File.separator + "storage.data";
+	
+	
+	static void sendMessage (CommandSender recipient, String message) {
+		recipient.sendMessage (ChatColor.GOLD + "[SimpleItemSigns] " + ChatColor.WHITE + message);
 	}
 	
-	private Object getConfigEntry (FileConfiguration activeConfig, FileConfiguration defaultConfig, String path) {
-		if (activeConfig.isSet (path)) {
-			return activeConfig.get (path);
-		} else {
-			getLogger ().severe ("Your configuration has missing fields! Delete the config.yml, restart the server and re-enter your settings or look for a fix in the spigot resource update post!");
-			return defaultConfig.get (path);
-		}
-	}
-	
-	static void sendMessage (CommandSender recipient, String input) {
-		recipient.sendMessage (ChatColor.GOLD + "[SimpleItemSigns] " + ChatColor.GRAY + input);
+	static void sendError (CommandSender recipient, String error) {
+		recipient.sendMessage (ChatColor.GOLD + "[SimpleItemSigns] " + ChatColor.RED + error);
 	}
 	
 	static boolean isSign (Material material) {

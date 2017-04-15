@@ -7,5 +7,12 @@ main: ${mainClass}
 
 commands:
   simpleitemsigns:
-    description: "§7Create, delete, reload ItemSigns."
-    usage: "§6[SimpleItemSigns] §fUsage: /simpleitemsigns <create|delete|reload> <if create: inventory title>"
+    description: "Create, delete, reload ItemSigns."
+    usage: |
+      §7[§6SimpleItemSigns§7]§f All commands start with§7:§f /simpleitemsigns §7|§f /sis
+      create <inventory title> §7: Create a new ItemSign from the sign you are currently looking at, filled with the item currently in your hand.
+      delete §7: Delete the ItemSign you are currently looking at.
+      check §7: Deletes all signs from the storage which are no longer valid ItemSigns.
+      color §7: Applies the colors (colorcodes) to the sign you are currently looking at.
+      edit <line number> <new text> §7: Replace the specified line of the sign you are currently looking at.
+    aliases: sis
