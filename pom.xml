@@ -6,7 +6,7 @@
 
     <groupId>hu.trigary</groupId>
     <artifactId>SimpleItemSigns</artifactId>
-    <version>2.0</version>
+    <version>3.0</version>
 
     <properties>
         <mainClass>${groupId}.simpleitemsigns.Main</mainClass>
@@ -28,7 +28,7 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.11.2-R0.1-SNAPSHOT</version> <!-->1.8.8-R0.1-SNAPSHOT<!-->
+            <version>1.12-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

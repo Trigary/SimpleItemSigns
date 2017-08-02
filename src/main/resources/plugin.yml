@@ -9,10 +9,10 @@ commands:
   simpleitemsigns:
     description: "Create, delete, manage ItemSigns."
     usage: |
-      §7[§6SimpleItemSigns§7]§f All commands start with§7:§f /simpleitemsigns §7|§f /sis
-      create <inventory title> §7: Create a new ItemSign from the sign you are currently looking at, filled with the item currently in your hand.
-      delete §7: Transforms the sign you are looking at back into a normal one.
-      check §7: Deletes all signs from the storage which are no longer valid ItemSigns.
-      color §7: Applies the colors (color codes) to the sign you are currently looking at.
-      edit <line number> <new text> §7: Replace the specified line of the sign you are currently looking at.
+      §7[§6SimpleItemSigns§7]§f Command list:
+      §cUsage: §f/sis create <inventory title> §7- Create a new ItemSign from the sign you are currently looking at, filled with the item currently in your hand.
+      §cUsage: §f/sis delete §7- Transforms the sign you are looking at back into a normal one.
+      §cUsage: §f/sis check §7- Deletes all signs from the storage which are no longer valid ItemSigns.
+      §cUsage: §f/sis color §7- Applies the colors (color codes) to the sign you are currently looking at.
+      §cUsage: §f/sis edit <line number> <new text> §7- Replace the specified line of the sign you are currently looking at.
     aliases: sis

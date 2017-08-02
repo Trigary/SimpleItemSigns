@@ -1,9 +1,8 @@
-###########################################################
+##########################################################
 # - SimpleItemSigns Configuration - Plugin by: Trigary - #
-###########################################################
+##########################################################
 # All commands are explained when you enter one incorrectly and they all require the "simpleitemsigns.admin" permission
-# Command aliases: /simpleitemsigns | /sis
-
+# Command: "/simpleitemsigns" ("/sis" for short)
 
 
 # If this is true, only players with the "simpleitemsigns.use" permission will be able to open ItemSigns

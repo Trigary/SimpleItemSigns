@@ -1,100 +1,130 @@
 package hu.trigary.simpleitemsigns;
 
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.command.CommandSender;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
-public class Main extends JavaPlugin {	
+public class Main extends JavaPlugin {
 	@Override
-	public void onEnable () {
-		saveDefaultConfig ();
-		needUsePermission = getConfig ().getBoolean ("needUsePermission");
-		size = getConfig ().getInt ("rows") * 9;
-		dontTrash = getConfig ().getBoolean ("dontTrash");
-		
-		Map<String, Object> data = customLoad ("data.data");
-		itemSigns = new HashSet<> ();
-		if (data != null) {
-			loadItemSigns (data.get ("itemSigns"));
+	public void onEnable() {
+		saveDefaultConfig();
+		int rows = getConfig().getInt("rows");
+		if (rows < 1 || rows > 6 ) {
+			rows = 3;
+			getLogger().severe("The specified row amount is invalid; using the default value of 3.");
 		}
 		
-		getCommand ("simpleitemsigns").setExecutor (new CommandListener (this));
-		getServer ().getPluginManager ().registerEvents (new EventListener (this), this);
-	}
-	
-	Set<ItemSign> itemSigns;
-	boolean needUsePermission;
-	int size;
-	boolean dontTrash;
-	
-	
-	
-	void saveData () { //TODO rename to save
-		Map<String, Object> data = new HashMap<> ();
+		loadData();
 		
-		Set<Map<String, Object>> serializedItemSigns = new HashSet<> ();
-		for (ItemSign itemSign : itemSigns) {
-			serializedItemSigns.add (itemSign.serialize ());
+		getCommand("simpleitemsigns").setExecutor(new CommandListener(this));
+		getServer().getPluginManager().registerEvents(new EventListener(
+				this,
+				getConfig().getBoolean("needUsePermission"),
+				rows * 9,
+				getConfig().getBoolean("dontTrash")
+		), this);
+	}
+	
+	private Map<Location, ItemSign> itemSigns;
+	
+	
+	
+	public ItemSign getItemSign(Block block) {
+		return itemSigns.get(block.getLocation());
+	}
+	
+	public void addItemSign(Block block, ItemSign itemSign) {
+		itemSigns.put(block.getLocation(), itemSign);
+		saveData();
+	}
+	
+	public boolean removeItemSign(Block block) {
+		if (itemSigns.remove(block.getLocation()) != null) {
+			saveData();
+			return true;
 		}
-		data.put ("itemSigns", serializedItemSigns);
 		
-		customSave (data, "data.data");
+		return false;
+	}
+	
+	public int cleanItemSigns() {
+		int size = itemSigns.size();
+		itemSigns.keySet().removeIf((location -> !Utils.isSign(location.getBlock())));
+		
+		int removed = size - itemSigns.size();
+		if (removed > 0) {
+			saveData();
+		}
+		
+		return removed;
 	}
 	
 	
 	
-	private void loadItemSigns (Object mapValue) {
-		@SuppressWarnings ("unchecked")
-		Set<Map<String, Object>> serializedItemSigns = (Set<Map<String, Object>>)mapValue;
-		for (Map<String, Object> serialized : serializedItemSigns) {
-			itemSigns.add (ItemSign.deserialize (serialized));
+	
+	
+	private void loadData() {
+		itemSigns = new HashMap<>();
+		Map<Map<String, Object>, Map<String, Object>> map = loadJson(new TypeToken<Map<Map<String, Object>, Map<String, Object>>>() {}.getType());
+		if (map == null) {
+			return;
+		}
+		
+		for (Map.Entry<Map<String, Object>, Map<String, Object>> entry : map.entrySet()) {
+			itemSigns.put(Location.deserialize(entry.getKey()), ItemSign.deserialize(entry.getValue()));
 		}
 	}
 	
-	private Map<String, Object> customLoad (String path) {
-		if (new File (getDataFolder () + File.separator + path).exists ()) {
+	private void saveData() {
+		Map<Map<String, Object>, Map<String, Object>> map = new HashMap<>();
+		for (Map.Entry<Location, ItemSign> entry : itemSigns.entrySet()) {
+			map.put(entry.getKey().serialize(), entry.getValue().serialize());
+		}
+		
+		saveJson(map);
+	}
+	
+	
+	
+	private <T> T loadJson(Type type) {
+		File file = new File(getDataFolder() + File.separator + "data.json");
+		if (file.exists() && file.length() > 0) {
 			try {
-				ObjectInputStream in = new ObjectInputStream (new FileInputStream (getDataFolder () + File.separator + path));
-				@SuppressWarnings ("unchecked")
-				Map<String, Object> data = (Map<String, Object>)in.readObject ();
-				in.close ();
-				return data;
-			} catch (IOException | ClassNotFoundException exception) {
-				exception.printStackTrace ();
+				FileReader reader = new FileReader(file);
+				T output = getGson().fromJson(reader, type);
+				reader.close();
+				return output;
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 		}
 		return null;
 	}
 	
-	private void customSave (Map<String, Object> object, String path) {
+	private void saveJson(Object serializable) {
+		File file = new File(getDataFolder() + File.separator + "data.json");
 		try {
-			ObjectOutputStream out = new ObjectOutputStream (new FileOutputStream (getDataFolder () + File.separator + path));
-			out.writeObject (object);
-			out.flush ();
-			out.close ();
-		} catch (IOException exception) {
-			exception.printStackTrace ();
+			FileWriter writer = new FileWriter(file);
+			writer.write(getGson().toJson(serializable));
+			writer.flush();
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 	
-	
-	
-	static void sendMessage (CommandSender recipient, String message) {
-		recipient.sendMessage (ChatColor.GOLD + "[SimpleItemSigns] " + ChatColor.WHITE + message);
-	}
-	
-	static void sendError (CommandSender recipient, String error) {
-		recipient.sendMessage (ChatColor.GOLD + "[SimpleItemSigns] " + ChatColor.RED + error);
-	}
-	
-	static boolean isSign (Material material) {
-		return (material == Material.SIGN_POST || material == Material.WALL_SIGN);
+	private Gson getGson() {
+		return new GsonBuilder().enableComplexMapKeySerialization().create();
 	}
 }
