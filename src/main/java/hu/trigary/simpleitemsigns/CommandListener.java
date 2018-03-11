@@ -13,16 +13,16 @@ import org.bukkit.inventory.ItemStack;
 import java.util.Set;
 
 public class CommandListener implements CommandExecutor {
-	CommandListener(Main main) {
+	private final Main main;
+	
+	public CommandListener(Main main) {
 		this.main = main;
 	}
-	
-	private final Main main;
 	
 	
 	
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		if (!sender.hasPermission("simpleitemsigns.admin")) {
 			Utils.sendError(sender, "You don't have permission to use this command!");
 			return true;
@@ -32,11 +32,11 @@ public class CommandListener implements CommandExecutor {
 			return false;
 		}
 		
-		switch (args[0]) {
+		switch (args[0].toLowerCase()) {
 			case "create":
 				if (args.length > 1) {
 					if (playerCheck(sender)) {
-						commandCreate((Player)sender, args);
+						commandCreate((Player) sender, args);
 					}
 					return true;
 				}
@@ -44,7 +44,7 @@ public class CommandListener implements CommandExecutor {
 			case "delete":
 				if (args.length == 1) {
 					if (playerCheck(sender)) {
-						commandDelete((Player)sender);
+						commandDelete((Player) sender);
 					}
 					return true;
 				}
@@ -58,7 +58,7 @@ public class CommandListener implements CommandExecutor {
 			case "color":
 				if (args.length == 1) {
 					if (playerCheck(sender)) {
-						commandColor((Player)sender);
+						commandColor((Player) sender);
 					}
 					return true;
 				}
@@ -66,7 +66,7 @@ public class CommandListener implements CommandExecutor {
 			case "edit":
 				if (args.length > 2) {
 					if (playerCheck(sender)) {
-						commandEdit((Player)sender, args);
+						commandEdit((Player) sender, args);
 					}
 					return true;
 				}
@@ -117,7 +117,7 @@ public class CommandListener implements CommandExecutor {
 			return;
 		}
 		
-		Sign sign = (Sign)block.getState();
+		Sign sign = (Sign) block.getState();
 		for (int i = 0; i < sign.getLines().length; i++) {
 			sign.setLine(i, ChatColor.translateAlternateColorCodes('&', sign.getLine(i)));
 		}
@@ -138,7 +138,7 @@ public class CommandListener implements CommandExecutor {
 			return;
 		}
 		
-		Sign sign = (Sign)block.getState();
+		Sign sign = (Sign) block.getState();
 		sign.setLine(number - 1, ChatColor.translateAlternateColorCodes('&', Utils.argsToString(args, 2)));
 		sign.update();
 		Utils.sendMessage(player, "You have successfully set the sign's " + number + ". line.");
@@ -156,7 +156,7 @@ public class CommandListener implements CommandExecutor {
 	}
 	
 	private Block getTargetBlock(Player player) {
-		Block block = player.getTargetBlock((Set<Material>)null, 16);
+		Block block = player.getTargetBlock((Set<Material>) null, 16);
 		if (block != null && Utils.isSign(block)) {
 			return block;
 		}

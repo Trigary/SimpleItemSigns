@@ -17,13 +17,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ItemSign implements InventoryHolder {
+	private final ItemStack item;
+	private final String title;
+	
 	public ItemSign(ItemStack item, String title) {
 		this.item = item.clone();
 		this.title = title;
 	}
-	
-	private final ItemStack item;
-	private final String title;
 	
 	
 	
@@ -54,36 +54,25 @@ public class ItemSign implements InventoryHolder {
 	}
 	
 	public static ItemSign deserialize(Map<String, Object> serialized) {
-		return new ItemSign(deserializeItemStack((String)serialized.get("item")), (String)serialized.get("title"));
+		return new ItemSign(deserializeItemStack((String) serialized.get("item")), (String) serialized.get("title"));
 	}
 	
 	
 	
 	private String serializeItemStack() {
-		try {
-			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-			BukkitObjectOutputStream bukkitOutputStream = new BukkitObjectOutputStream(outputStream);
-			bukkitOutputStream.writeObject(item);
-			bukkitOutputStream.close();
-			return Base64Coder.encodeLines(outputStream.toByteArray());
+		try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
+			new BukkitObjectOutputStream(stream).writeObject(item);
+			return Base64Coder.encodeLines(stream.toByteArray());
 		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
+			throw new RuntimeException("Failed to serialize ItemStack", e);
 		}
 	}
 	
 	private static ItemStack deserializeItemStack(String data) {
-		if (data != null && !data.isEmpty()) {
-			try {
-				ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64Coder.decodeLines(data));
-				BukkitObjectInputStream bukkitInputStream = new BukkitObjectInputStream(inputStream);
-				ItemStack item = (ItemStack)bukkitInputStream.readObject();
-				bukkitInputStream.close();
-				return item;
-			} catch (ClassNotFoundException | IOException e) {
-				e.printStackTrace();
-			}
+		try (ByteArrayInputStream stream = new ByteArrayInputStream(Base64Coder.decodeLines(data))) {
+			return (ItemStack) new BukkitObjectInputStream(stream).readObject();
+		} catch (ClassNotFoundException | IOException e) {
+			throw new RuntimeException("Failed to deserialize ItemStack", e);
 		}
-		return null;
 	}
 }

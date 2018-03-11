@@ -9,17 +9,17 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
 public class EventListener implements Listener {
-	EventListener(Main main, boolean needUsePermission, int size, boolean dontTrash) {
+	private final Main main;
+	private final boolean needUsePermission;
+	private final int size;
+	private final boolean dontTrash;
+	
+	public EventListener(Main main, boolean needUsePermission, int size, boolean dontTrash) {
 		this.main = main;
 		this.needUsePermission = needUsePermission;
 		this.size = size;
 		this.dontTrash = dontTrash;
 	}
-	
-	private final Main main;
-	private final boolean needUsePermission;
-	private final int size;
-	private final boolean dontTrash;
 	
 	
 	
@@ -46,8 +46,8 @@ public class EventListener implements Listener {
 			return;
 		}
 		
-		Player player = (Player)event.getPlayer();
-		ItemSign itemSign = (ItemSign)event.getInventory().getHolder();
+		Player player = (Player) event.getPlayer();
+		ItemSign itemSign = (ItemSign) event.getInventory().getHolder();
 		ItemStack clone = itemSign.getItemClone();
 		
 		int free = 0;

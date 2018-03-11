@@ -7,27 +7,27 @@ import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Main extends JavaPlugin {
+	private final Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
+	private Map<Location, ItemSign> itemSigns;
+	
 	@Override
 	public void onEnable() {
 		saveDefaultConfig();
 		int rows = getConfig().getInt("rows");
-		if (rows < 1 || rows > 6 ) {
+		if (rows < 1 || rows > 6) {
 			rows = 3;
 			getLogger().severe("The specified row amount is invalid; using the default value of 3.");
 		}
 		
 		loadData();
-		
 		getCommand("simpleitemsigns").setExecutor(new CommandListener(this));
+		
 		getServer().getPluginManager().registerEvents(new EventListener(
 				this,
 				getConfig().getBoolean("needUsePermission"),
@@ -35,8 +35,6 @@ public class Main extends JavaPlugin {
 				getConfig().getBoolean("dontTrash")
 		), this);
 	}
-	
-	private Map<Location, ItemSign> itemSigns;
 	
 	
 	
@@ -54,7 +52,6 @@ public class Main extends JavaPlugin {
 			saveData();
 			return true;
 		}
-		
 		return false;
 	}
 	
@@ -66,11 +63,8 @@ public class Main extends JavaPlugin {
 		if (removed > 0) {
 			saveData();
 		}
-		
 		return removed;
 	}
-	
-	
 	
 	
 	
@@ -91,40 +85,30 @@ public class Main extends JavaPlugin {
 		for (Map.Entry<Location, ItemSign> entry : itemSigns.entrySet()) {
 			map.put(entry.getKey().serialize(), entry.getValue().serialize());
 		}
-		
 		saveJson(map);
 	}
 	
 	
 	
 	private <T> T loadJson(Type type) {
-		File file = new File(getDataFolder() + File.separator + "data.json");
-		if (file.exists() && file.length() > 0) {
-			try {
-				FileReader reader = new FileReader(file);
-				T output = getGson().fromJson(reader, type);
-				reader.close();
-				return output;
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+		File file = new File(getDataFolder(), "data.json");
+		if (!file.exists() || file.length() <= 0) {
+			return null;
 		}
-		return null;
+		
+		try (Reader reader = new FileReader(file)) {
+			return gson.fromJson(reader, type);
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to load the data file", e);
+		}
 	}
 	
 	private void saveJson(Object serializable) {
-		File file = new File(getDataFolder() + File.separator + "data.json");
-		try {
-			FileWriter writer = new FileWriter(file);
-			writer.write(getGson().toJson(serializable));
-			writer.flush();
-			writer.close();
+		File file = new File(getDataFolder(), "data.json");
+		try (Writer writer = new FileWriter(file)) {
+			writer.write(gson.toJson(serializable));
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new RuntimeException("Failed to save the data file", e);
 		}
-	}
-	
-	private Gson getGson() {
-		return new GsonBuilder().enableComplexMapKeySerialization().create();
 	}
 }
